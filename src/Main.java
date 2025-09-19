@@ -22,12 +22,12 @@ public class Main {
 
         t1 = new Thread(() -> {
             for(int i = 0; i < 1000000; i++){
-                c.value++;
+                c.incValue();
             }
         });
         t2 = new Thread(() -> {
             for(int i = 0; i < 1000000; i++){
-                c.value--;
+                c.decValue();
             }
         });
         t1.start();
@@ -35,6 +35,25 @@ public class Main {
         t1.join();
         t2.join();
         System.out.println(c.value);
+
+        t1 = new Thread(c::run);// () -> c.run()
+        t1.start();
+
+        t2 = new Thread(() -> {
+            synchronized (now){
+                try{
+                    now.wait(1000);
+                    synchronized (c){
+                        c.notify();//можно разблокировать wait//разблокирует поток
+                    }
+                    Thread.currentThread().interrupt();
+                } catch (InterruptedException e){}
+            }
+        });
+        t2.start();
+        t2.join();
+
+
     }
 
     public static void calc(int from, int to){
